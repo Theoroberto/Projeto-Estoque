@@ -114,7 +114,30 @@ def comprar_produto(nome: str, quantidade_comprada: int):
             cursor.execute("UPDATE estoque SET quantidade = ? WHERE id = ?", (quantidade_nova, id_produto))
     except Exception as exc:
         raise exc
+
+# Função de abastecimento
+def abastecer_produto(nome: str, quantidade_abastecida: int):
+    conexao = conectar()
+    with conexao:
+        cursor = conexao.cursor()
         
+        # Obtendo id e guardando em variável
+        cursor.execute("SELECT id FROM estoque WHERE nome = ?", (nome,))
+        produto = cursor.fetchone()
+        
+        # Verificando se o produto está no estoque
+        if not produto:
+            raise ValueError("Produto não encontrado")
+        
+        # Obtendo quantidade anterior usando o id
+        id_produto = produto[0]
+        cursor.execute("SELECT quantidade FROM estoque WHERE id = ?", (id_produto,))
+        quantidade_anterior = cursor.fetchone()
+        
+        # Atualizando quantidade
+        quantidade_nova = quantidade_anterior + quantidade_abastecida
+        cursor.execute("UPDATE estoque SET quantidade = ? WHERE id = ?", (quantidade_nova, id_produto))
+
 # Delete
 def deletar_produto(id: int):
     conexao = conectar()

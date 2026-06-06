@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
-from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, comprar_produto
+from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, comprar_produto, abastecer_produto
 
 # Conexao do app
 app = FastAPI()
@@ -20,9 +20,9 @@ class QuantidadeSchema(BaseModel):
     id: int
     quantidade: int
 
-class CompraSchema(BaseModel):
+class AtualizarSchema(BaseModel):
     nome: str
-    quantidade_comprada: int
+    quantidade_alterada: int
 
 # ROTAS
 
@@ -63,13 +63,21 @@ def atualizar_quantidade_por_id(dados: QuantidadeSchema):
     
 # PATCH / main/comprar_produto/{nome}
 @app.patch("/main/comprar_produto/{nome}")
-def comprar_produto_por_nome(dados: CompraSchema):
+def comprar_produto_por_nome(dados: AtualizarSchema):
     try:
-        comprar_produto(dados.nome, dados.quantidade_comprada)
+        comprar_produto(dados.nome, dados.quantidade_alterada)
         return {"mensagem": "Compra realizada com sucesso"}
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Erro ao comprar produto {exc}")
+        raise HTTPException(status_code=500, detail=f"Erro ao comprar produto: {exc}")
 
+# PATCH / main/abastecer_produto/{nome}
+@app.patch("/main/abastecer_produto/{nome}")
+def abastecer_produto_por_nome(dados: AtualizarSchema):
+    try:
+        abastecer_produto(dados.nome, dados.quantidade_alterada)
+        return {"mensagem": "Abastecimento realizado com sucesso"}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Erro ao abastecer produto: {exc}")
 # DELETE / main/deletar_produto/{id}
 @app.delete("/main/deletar_produto/{id}")
 def deletar_produto_por_id(id: int):
@@ -78,4 +86,4 @@ def deletar_produto_por_id(id: int):
         return {"mensagem": f"Produto com id {id} deletado com sucesso!"}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Erro ao deletar produto: {exc}")
-    
+
