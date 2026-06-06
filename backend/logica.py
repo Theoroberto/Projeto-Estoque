@@ -132,7 +132,7 @@ def abastecer_produto(nome: str, quantidade_abastecida: int):
         # Obtendo quantidade anterior usando o id
         id_produto = produto[0]
         cursor.execute("SELECT quantidade FROM estoque WHERE id = ?", (id_produto,))
-        quantidade_anterior = cursor.fetchone()
+        quantidade_anterior = cursor.fetchone()[0]
         
         # Atualizando quantidade
         quantidade_nova = quantidade_anterior + quantidade_abastecida
@@ -148,5 +148,3 @@ def deletar_produto(id: int):
             cursor.execute("DELETE FROM estoque WHERE id = ?", (id,))
     except Exception as exc:
         raise exc
-        
-
