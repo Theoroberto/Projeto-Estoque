@@ -16,11 +16,11 @@ def criar_tabela():
         with conexao:
             cursor = conexao.cursor()
             
-            cursor.execute("""CREATE TABLE IF NOT EXISTS estoque(
+            cursor.execute("""CREATE TABLE IF NOT EXISTS clientes(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nome TEXT NOT NULL UNIQUE,
-                preco FLOAT NOT NULL,
-                quantidade POSITIVE INTEGER NOT NULL
+                nome TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,   
+                senha TEXT NOT NULL
                 )""")
     except Exception as exc:
         raise exc
@@ -34,6 +34,18 @@ def inserir_produtos(data: List[Tuple]) -> None:
             cursor = conexao.cursor()
             
             cursor.executemany("INSERT INTO estoque (nome, preco, quantidade) VALUES (?, ?, ?)", data)
+    except Exception as exc:
+        raise exc
+    finally:
+        conexao.close()
+
+def inserir_clientes(data: List[Tuple]) -> None:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.executemany("INSERT INTO clientes (nome, email, senha) VALUES (?, ?, ?)", data)
     except Exception as exc:
         raise exc
     finally:
@@ -64,6 +76,26 @@ def exibir_produtos() -> List[Dict]:
     except Exception as exc:
         raise exc
 
+def exibir_clientes() -> List[Dict]:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, nome, email FROM clientes")
+            linhas = cursor.fetchall()
+            
+            clientes = []
+            for cliente in linhas:
+                clientes.append({
+                    "id": cliente[0],
+                    "nome": cliente[1],
+                    "email": cliente[2]
+                })
+            return clientes
+    except Exception as exc:
+        raise exc
+    
 # Update
 def atualizar_preco(id: int, preco: float):
     conexao = conectar()

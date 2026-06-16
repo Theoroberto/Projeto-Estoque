@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
-from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, comprar_produto, abastecer_produto
+from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, comprar_produto, abastecer_produto, exibir_clientes, inserir_clientes
 
 # Conexao do app
 app = FastAPI()
@@ -24,6 +24,11 @@ class AtualizarSchema(BaseModel):
     nome: str
     quantidade_alterada: int
 
+class ClienteSchema(BaseModel):
+    nome: str
+    email: str
+    senha: str
+
 # ROTAS
 
 # POST / main/inserir_produtos_em_lote
@@ -38,10 +43,27 @@ def inserir_produtos_em_lote(dados: List[ProdutoSchema]):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Erro ao inserir produtos: {exc}")
 
+# POST / main/inserir_clientes_em_lote
+@app.post("/main/inserir_clientes/lote")
+def inserir_clientes_em_lote(dados: List[ClienteSchema]):
+    try:
+        dados_formatados = [
+            (dado.nome, dado.email, dado.senha) for dado in dados
+        ]
+        inserir_clientes(dados_formatados)
+        return {"mensagem": f"{len(dados_formatados)} clientes inseridos com sucesso!"}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Erro ao inserir clientes: {exc}")
+
 # GET / estoque
 @app.get("/main/estoque")
 def exibir_estoque():
     return exibir_produtos()
+
+# GET / clientes
+@app.get("/main/clientes")
+def exibir_dados_clientes():
+    return exibir_clientes()
 
 # PATCH / main/atualizar_preco/{id}
 @app.patch("/main/atualizar_preco/{id}")
