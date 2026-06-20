@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
-from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, comprar_produto, abastecer_produto, exibir_clientes, inserir_clientes
+from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, registrar_compra, abastecer_produto, exibir_clientes, inserir_clientes
 
 # Conexao do app
 app = FastAPI()
@@ -24,6 +24,12 @@ class AtualizarSchema(BaseModel):
     nome: str
     quantidade_alterada: int
 
+class CompraSchema(BaseModel):
+    nome_cliente: str
+    nome_produto: str
+    quantidade_comprada: int = Field(..., gt=0, description="Quantidade deve ser maior que zero")
+    email: str = "nao_informado@email.com"
+    senha: str = "123456"
 class ClienteSchema(BaseModel):
     nome: str
     email: str
@@ -85,9 +91,9 @@ def atualizar_quantidade_por_id(dados: QuantidadeSchema):
     
 # PATCH / main/comprar_produto/{nome}
 @app.patch("/main/comprar_produto/{nome}")
-def comprar_produto_por_nome(dados: AtualizarSchema):
+def comprar_produto_por_nome(dados: CompraSchema):
     try:
-        comprar_produto(dados.nome, dados.quantidade_alterada)
+        registrar_compra(dados.nome_cliente, dados.nome_produto, dados.quantidade_comprada, dados.email, dados.senha)
         return {"mensagem": "Compra realizada com sucesso"}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Erro ao comprar produto: {exc}")

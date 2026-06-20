@@ -16,12 +16,17 @@ def criar_tabela():
         with conexao:
             cursor = conexao.cursor()
             
-            cursor.execute("""CREATE TABLE IF NOT EXISTS clientes(
+            cursor.execute("PRAGMA foreign_keys = ON;")
+            
+            # Exemplo de como deve estar a criação da tabela clientes:
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nome TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE,   
-                senha TEXT NOT NULL
-                )""")
+                nome TEXT UNIQUE NOT NULL, 
+                email TEXT,
+                senha TEXT
+            );
+            """)
     except Exception as exc:
         raise exc
 
@@ -118,29 +123,43 @@ def atualizar_quantidade(id: int, quantidade: int):
         raise exc
 
 # Função de compra
-def comprar_produto(nome: str, quantidade_comprada: int):
+def registrar_compra(
+    nome_cliente: str, 
+    nome_produto: str, 
+    quantidade_comprada: int,
+    email_cliente: str = "nao_informado@email.com", # Padrão caso não seja enviado
+    senha_cliente: str = "123456"                   # Padrão caso não seja enviado
+):
     conexao = conectar()
     try:
         with conexao:
             cursor = conexao.cursor()
+            cursor.execute("PRAGMA foreign_keys = ON;")
             
+            # Verificando cliente na tabela "clientes"
+            cursor.execute("SELECT 1 FROM clientes WHERE nome = (?)", (nome_cliente,))
+            cliente_existe = cursor.fetchone()
+            
+            if not cliente_existe:
+                cursor.execute("INSERT INTO clientes (nome, email, senha) VALUES (?, ?, ?)", (nome_cliente, email_cliente, senha_cliente))
             # Obtendo id e guardando em variável
-            cursor.execute("SELECT id FROM estoque WHERE nome = ?", (nome,))
+            cursor.execute("SELECT id, quantidade FROM estoque WHERE nome = ?", (nome_produto,))
             produto = cursor.fetchone()
             
-            # Verificando se o prodtuo está no estoque
+            # Verificando se o produto está no estoque
             if not produto:
                 raise ValueError("Produto não encontrado")
             
-            # Correção 2: Usando id do produto para atualizar quantidade
-            id_produto = produto[0]
-            cursor.execute("SELECT quantidade FROM estoque WHERE nome = ?", (nome,))
-            quantidade_anterior = cursor.fetchone()[0]
-
+            # Descompactando dados
+            id_produto, quantidade_anterior = produto
+            
             # Verificando se quantidade é suficiente
             if quantidade_anterior < quantidade_comprada:
                 raise ValueError("Quantidade insuficiente em estoque")
 
+            # Registrando pedido na tabela "pedidos"
+            cursor.execute("INSERT INTO pedidos (cliente, produto, quantidade) VALUES (?, ?, ?);", (nome_cliente, nome_produto, quantidade_comprada))
+            
             # Atualizando quantidade
             quantidade_nova = quantidade_anterior - quantidade_comprada
             cursor.execute("UPDATE estoque SET quantidade = ? WHERE id = ?", (quantidade_nova, id_produto))
