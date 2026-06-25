@@ -18,13 +18,36 @@ def criar_tabela():
             
             cursor.execute("PRAGMA foreign_keys = ON;")
             
-            # Exemplo de como deve estar a criação da tabela clientes:
+            # Estoque
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS estoque (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nome TEXT UNIQUE NOT NULL,
+                preco REAL NOT NULL,
+                quantidade INTEGER NOT NULL DEFAULT 0
+            );
+            """)
+            
+            # Clientes
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome TEXT UNIQUE NOT NULL, 
                 email TEXT,
                 senha TEXT
+            );
+            """)
+            
+            # Pedidos
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS pedidos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cliente TEXT NOT NULL,
+                produto TEXT NOT NULL,
+                quantidade INTEGER NOT NULL,
+                data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (cliente) REFERENCES clientes(nome),
+                FOREIGN KEY (produto) REFERENCES estoque(nome)
             );
             """)
     except Exception as exc:
@@ -57,6 +80,7 @@ def inserir_clientes(data: List[Tuple]) -> None:
         conexao.close()
 
 # Read
+# /estoque
 def exibir_produtos() -> List[Dict]:
     conexao = conectar()
     try:
@@ -81,6 +105,42 @@ def exibir_produtos() -> List[Dict]:
     except Exception as exc:
         raise exc
 
+def exibir_produto_id(id: int) -> Dict :
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, nome, preco, quantidade FROM estoque WHERE id = ?", (id,))
+            linha = cursor.fetchone()
+            
+            return {
+                "id": linha[0],
+                "nome": linha[1],
+                "preco": linha[2],
+                "quantidade": linha[3]
+            }
+    except Exception as exc:
+        raise exc
+
+def exibir_produto_nome(nome: str) -> Dict:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, nome, preco, quantidade FROM estoque WHERE nome = ?",(nome,))
+            linha = cursor.fetchone()
+            return {
+                "id": linha[0],
+                "nome": linha[1],
+                "preco": linha[2],
+                "quantidade": linha[3]
+            }
+    except Exception as exc:
+        raise exc
+ 
+# /clientes
 def exibir_clientes() -> List[Dict]:
     conexao = conectar()
     try:
@@ -100,7 +160,81 @@ def exibir_clientes() -> List[Dict]:
             return clientes
     except Exception as exc:
         raise exc
-    
+
+def exibir_cliente_id(id: int) -> Dict:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, nome, email FROM clientes WHERE id = ?", (id,))
+            linha = cursor.fetchone()
+            
+            return {
+                "id": linha[0],
+                "nome": linha[1],
+                "email": linha[2]
+            }
+    except Exception as exc:
+        raise exc
+
+def exibir_cliente_nome(nome: str) -> Dict:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, nome, email FROM clientes WHERE nome = ?", (nome,))
+            linha = cursor.fetchone()
+            
+            return {
+                "id": linha[0],
+                "nome": linha[1],
+                "email": linha[2]
+            }
+    except Exception as exc:
+        raise exc
+
+# /pedidos
+def exibir_pedidos() -> List[Dict]:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, cliente, produto, quantidade, data_hora FROM pedidos")
+            linhas = cursor.fetchall()
+            
+            pedidos = []
+            for linha in linhas:
+                pedidos.append({
+                    "id": linha[0],
+                    "cliente": linha[1],
+                    "produto": linha[2],
+                    "quantidade": linha[3],
+                    "data_hora": linha[4]
+                })
+            return pedidos
+    except Exception as exc:
+        raise exc
+
+def exibir_pedido_id(id) -> Dict:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, cliente, produto, quantidade, data_hora FROM pedidos WHERE id = ?", (id,))
+            linha = cursor.fetchone()
+            return {
+                "id": linha[0],
+                "cliente": linha[1],
+                "produto": linha[2],
+                "quantidade": linha[3],
+                "data_hora": linha[4]
+            }
+    except Exception as exc:
+        raise exc
 # Update
 def atualizar_preco(id: int, preco: float):
     conexao = conectar()

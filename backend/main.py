@@ -1,10 +1,26 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List
-from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos, deletar_produto, registrar_compra, abastecer_produto, exibir_clientes, inserir_clientes
+from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos
+from logica import deletar_produto, registrar_compra, abastecer_produto, exibir_clientes, inserir_clientes
+from logica import criar_tabela, exibir_pedidos, exibir_produto_id, exibir_produto_nome, exibir_pedido_id, exibir_cliente_id, exibir_cliente_nome
 
 # Conexao do app
 app = FastAPI()
+
+# Inicialização
+@app.on_event("inicializar")
+def inicializar():
+    criar_tabela()
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Schemas
 class ProdutoSchema(BaseModel):
@@ -61,15 +77,39 @@ def inserir_clientes_em_lote(dados: List[ClienteSchema]):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Erro ao inserir clientes: {exc}")
 
-# GET / estoque
+# GET / main/estoque
 @app.get("/main/estoque")
 def exibir_estoque():
     return exibir_produtos()
 
-# GET / clientes
+# GET / main/estoque/{id}
+@app.get("main/estoque/{id}")
+def exibir_produto_por_id(id: int):
+    return exibir_produto_id(id)
+
+# GET / main/estoque/{nome}
+@app.get("main/estoque/{nome}")
+def exibir_produto_por_nome(nome: str):
+    return exibir_produto_nome(nome)
+
+# GET / main/clientes
 @app.get("/main/clientes")
 def exibir_dados_clientes():
     return exibir_clientes()
+# GET / main/clientes/{id}
+@app.get("/main/cliente/{id}")
+def exibir_cliente_por_id(id: int):
+    return exibir_cliente_id(id)
+# GET / main/clientes/{nome}
+@app.get("/main/clientes/{nome}")
+def exibir_cliente_por_nome(nome: str):
+    return exibir_cliente_nome(nome)
+
+# GET / main/pedidos
+@app.get("/main/pedidos")
+def exibir_registros_pedidos():
+    return exibir_pedidos()
+
 
 # PATCH / main/atualizar_preco/{id}
 @app.patch("/main/atualizar_preco/{id}")
