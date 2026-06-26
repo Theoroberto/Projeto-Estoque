@@ -45,7 +45,7 @@ def criar_tabela():
                 cliente TEXT NOT NULL,
                 produto TEXT NOT NULL,
                 quantidade INTEGER NOT NULL,
-                data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (cliente) REFERENCES clientes(nome),
                 FOREIGN KEY (produto) REFERENCES estoque(nome)
             );
@@ -218,7 +218,7 @@ def exibir_pedidos() -> List[Dict]:
     except Exception as exc:
         raise exc
 
-def exibir_pedido_id(id) -> Dict:
+def exibir_pedido_id(id: int) -> Dict:
     conexao = conectar()
     try:
         with conexao:
@@ -235,6 +235,49 @@ def exibir_pedido_id(id) -> Dict:
             }
     except Exception as exc:
         raise exc
+
+def exibir_pedido_cliente(cliente: str) -> List[Dict]:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, cliente, produto, data_hora FROM pedidos WHERE cliente = ?", (cliente,))
+            linhas = cursor.fetchall()
+            
+            pedidos = []
+            for linha in linhas:
+                pedidos.append({
+                    "id": linha[0],
+                    "cliente": linha[1],
+                    "produto": linha[2],
+                    "data_hora": linha[3]
+                })
+            return pedidos
+    except Exception as exc:
+        raise exc
+
+def exibir_pedido_produto(produto: str) -> List[Dict]:
+    conexao = conectar()
+    try:
+        with conexao:
+            cursor = conexao.cursor()
+            
+            cursor.execute("SELECT id, cliente, produto, data_hora FROM pedidos WHERE produto = ?", (produto,))
+            linhas = cursor.fetchall()
+            
+            pedidos = []
+            for linha in linhas:
+                pedidos.append({
+                    "id": linha[0],
+                    "cliente": linha[1],
+                    "produto": linha[2],
+                    "data_hora": linha[3]
+                })
+            return pedidos
+    except Exception as exc:
+        raise exc
+
 # Update
 def atualizar_preco(id: int, preco: float):
     conexao = conectar()

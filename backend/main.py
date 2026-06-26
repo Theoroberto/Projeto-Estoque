@@ -5,14 +5,12 @@ from typing import List
 from logica import exibir_produtos, atualizar_preco, atualizar_quantidade, inserir_produtos
 from logica import deletar_produto, registrar_compra, abastecer_produto, exibir_clientes, inserir_clientes
 from logica import criar_tabela, exibir_pedidos, exibir_produto_id, exibir_produto_nome, exibir_pedido_id, exibir_cliente_id, exibir_cliente_nome
+from logica import exibir_pedido_cliente, exibir_pedido_produto
+
 
 # Conexao do app
 app = FastAPI()
 
-# Inicialização
-@app.on_event("inicializar")
-def inicializar():
-    criar_tabela()
 
 # CORS
 app.add_middleware(
@@ -83,12 +81,12 @@ def exibir_estoque():
     return exibir_produtos()
 
 # GET / main/estoque/{id}
-@app.get("main/estoque/{id}")
+@app.get("/main/estoque/id/{id}")
 def exibir_produto_por_id(id: int):
     return exibir_produto_id(id)
 
 # GET / main/estoque/{nome}
-@app.get("main/estoque/{nome}")
+@app.get("/main/estoque/nome/{nome}")
 def exibir_produto_por_nome(nome: str):
     return exibir_produto_nome(nome)
 
@@ -97,11 +95,11 @@ def exibir_produto_por_nome(nome: str):
 def exibir_dados_clientes():
     return exibir_clientes()
 # GET / main/clientes/{id}
-@app.get("/main/cliente/{id}")
+@app.get("/main/cliente/id/{id}")
 def exibir_cliente_por_id(id: int):
     return exibir_cliente_id(id)
 # GET / main/clientes/{nome}
-@app.get("/main/clientes/{nome}")
+@app.get("/main/clientes/nome/{nome}")
 def exibir_cliente_por_nome(nome: str):
     return exibir_cliente_nome(nome)
 
@@ -110,6 +108,24 @@ def exibir_cliente_por_nome(nome: str):
 def exibir_registros_pedidos():
     return exibir_pedidos()
 
+# GET / main/pedidos/{id}
+@app.get("/main/pedidos/id/{id}")
+def exibir_pedido_por_id(id: int):
+    return exibir_pedido_id(id)
+
+# GET / main/pedidos/cliente/{nome}
+@app.get("/main/pedidos/cliente/{cliente}")
+def exibir_pedidos_por_cliente(cliente: str):
+    return exibir_pedido_cliente(cliente)
+    
+# GET / main/pedidos/produto/{nome}
+@app.get("/main/pedidos/produto/{produto}")
+def exibir_pedidos_por_produto(produto: str):
+    return exibir_pedido_produto(produto)
+
+# TODO PATCH / main/atualizar_produto/{id}
+
+# TODO PATCH / main/atualizar_cliente/{id}
 
 # PATCH / main/atualizar_preco/{id}
 @app.patch("/main/atualizar_preco/{id}")
